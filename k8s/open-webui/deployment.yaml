@@ -1,0 +1,37 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: open-webui
+  namespace: llm
+  labels:
+    app: open-webui
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: open-webui
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: open-webui
+    spec:
+      containers:
+        - name: open-webui
+          image: ghcr.io/open-webui/open-webui:main
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: OLLAMA_BASE_URL
+              value: 'http://ollama-service.llm.svc:11434'
+          ports:
+            - name: 8080-tcp
+              containerPort: 8080
+              protocol: TCP
+          volumeMounts:
+            - name: open-webui-storage
+              mountPath: /app/backend/data
+      volumes:
+        - name: open-webui-storage
+          persistentVolumeClaim:
+            claimName: open-webui-pvc
